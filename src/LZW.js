@@ -139,7 +139,7 @@ export default class LZW extends React.Component {
 
         <h1>Lempel–Ziv–Welch</h1>
 
-        <div className="section">
+        <div className="section slow">
           <p>Spowolnienie:&nbsp;</p>
           <SelectInput
             name="slowMode"

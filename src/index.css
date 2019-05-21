@@ -97,3 +97,35 @@ h3 {
   width: 140px;
   text-align: left;
 }
+
+@media (max-width: 700px) {
+  h3 {
+    margin-top: 50px !important;
+  }
+
+  .section {
+    flex-wrap: wrap;
+    margin: 0 20px 0 20px;
+  }
+
+  .section.slow {
+    margin-bottom: -20px;
+  }
+
+  .form-group {
+    width: 60px;
+  }
+
+  .form-group.initial-txt,
+  .form-group.initial-dict {
+    margin: 30px 0 -15px 0;
+    width: 100%;
+    text-align: left;
+  }
+
+  .word {
+    margin: 10px;
+    width: 100px;
+    text-align: left;
+  }
+}
