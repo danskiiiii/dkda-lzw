@@ -1,6 +1,5 @@
 import { SelectInput, TextInput } from './common';
 
-import { Link } from 'react-router-dom';
 import React from 'react';
 
 export default class LZW extends React.Component {
@@ -192,10 +191,6 @@ export default class LZW extends React.Component {
     } = this.state;
     return (
       <div className="wrapper">
-        <Link to="/">
-          <i className="fa fa-long-arrow-left fa-lg top-left" />
-        </Link>
-
         <h1>Lempel–Ziv–Welch</h1>
 
         <div className="section slow">
