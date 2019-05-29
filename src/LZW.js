@@ -6,15 +6,24 @@ import React from 'react';
 export default class LZW extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
+
+    this.initialState = {
       dictionary: [],
+      code: [],
+      decodedDict: [],
       step: 1,
       slowMode: 0,
       initialDictInput: '',
       initialText: '',
       initialError: false,
       disableActions: false,
+      shouldDecode: true,
+      isDecoding: false,
+      decodedSentence: '',
+      joinedText: '',
     };
+
+    this.state = this.initialState;
   }
 
   handleKeyPress = evt => {
@@ -44,19 +53,21 @@ export default class LZW extends React.Component {
   };
 
   handleCreateInitialDictionary = () => {
-    const { initialDictInput } = this.state;
+    const { initialDictInput, dictionary } = this.state;
 
-    this.setState(
-      prevState => ({
-        dictionary: [...prevState.dictionary, initialDictInput],
-        initialDictInput: '',
-      }),
-      () => this.dictInput.focus()
-    );
+    if (initialDictInput && !dictionary.some(w => w === initialDictInput)) {
+      this.setState(
+        prevState => ({
+          dictionary: [...prevState.dictionary, initialDictInput],
+          initialDictInput: '',
+        }),
+        () => this.dictInput.focus()
+      );
+    }
   };
 
   handleStart = () => {
-    const { initialText } = this.state;
+    const { initialText, dictionary } = this.state;
 
     if (!initialText.length) {
       this.setState({ initialError: true });
@@ -65,7 +76,7 @@ export default class LZW extends React.Component {
 
     const joinedText = initialText.split(' ').join('-');
 
-    this.setState({ joinedText, disableActions: true }, this.mainLoop);
+    this.setState({ joinedText, disableActions: true, decodedDict: dictionary }, this.encodeLoop);
   };
 
   findNext = (joinedText, dictionary) => {
@@ -83,7 +94,47 @@ export default class LZW extends React.Component {
     }
   };
 
-  mainLoop = () => {
+  prepareDecode = () => {
+    const { shouldDecode } = this.state;
+    if (shouldDecode) {
+      window.scroll({ top: document.body.scrollHeight, behavior: 'smooth' });
+      this.setState({ isDecoding: true }, this.decodeLoop);
+    }
+  };
+
+  decodeLoop = () => {
+    const { code, step, slowMode } = this.state;
+
+    setTimeout(() => {}, step * 100 + 500 * Number(slowMode));
+
+    if (step < code.length + 1) {
+      setTimeout(() => {
+        this.setState(prevState => {
+          let newEntry = prevState.decodedDict[code[step - 1]];
+
+          if (typeof newEntry === 'undefined') {
+            newEntry = prevState.decodedDict[code[step - 2]].concat(prevState.decodedDict[code[step - 2]][0]);
+          }
+
+          return {
+            decodedDict:
+              step > 1
+                ? [...prevState.decodedDict, prevState.decodedDict[code[step - 2]].concat(newEntry[0])]
+                : prevState.decodedDict,
+            decodedSentence: prevState.decodedSentence.concat(newEntry),
+            step: prevState.step + 1,
+          };
+        });
+      }, step * 100 + 500 + 500 * Number(slowMode));
+
+      setTimeout(() => {
+        window.scroll({ top: document.body.scrollHeight, behavior: 'smooth' });
+        this.decodeLoop();
+      }, step * 100 + 1000 + 500 * Number(slowMode));
+    }
+  };
+
+  encodeLoop = () => {
     const { dictionary, joinedText, step, slowMode } = this.state;
 
     let nextWord = '';
@@ -97,32 +148,39 @@ export default class LZW extends React.Component {
     setTimeout(() => {}, step * 100 + 500 * Number(slowMode));
 
     setTimeout(() => {
-      this.setState(prevState => ({
-        joinedText: prevState.joinedText.substr(nextWord.length - 1, prevState.joinedText.length),
+      this.setState(prevState => {
+        const codeElementTxt =
+          prevState.joinedText.length > nextWord.length ? nextWord.slice(0, nextWord.length - 1) : nextWord;
+        const codeElement = prevState.dictionary.indexOf(codeElementTxt);
 
-        dictionary: !prevState.dictionary.some(w => w === nextWord)
-          ? [...prevState.dictionary, nextWord]
-          : prevState.dictionary,
-      }));
+        return {
+          joinedText: prevState.joinedText.substr(nextWord.length - 1, prevState.joinedText.length),
+          code: codeElement !== -1 ? [...prevState.code, codeElement] : prevState.code,
+          dictionary: !prevState.dictionary.some(w => w === nextWord)
+            ? [...prevState.dictionary, nextWord]
+            : prevState.dictionary,
+        };
+      });
     }, step * 100 + 500 + 500 * Number(slowMode));
 
     setTimeout(() => {
       this.setState(prevState => ({ step: prevState.step + 1 }));
 
       if (this.state.joinedText.length > 1) {
-        window.scroll({
-          top: document.body.scrollHeight,
-          behavior: 'smooth',
-        });
-        this.mainLoop();
+        window.scroll({ top: document.body.scrollHeight, behavior: 'smooth' });
+        this.encodeLoop();
       } else {
-        this.setState({ step: 1, disableActions: false, joinedText: 'SŁOWNIK KOŃCOWY:' });
+        this.setState({ step: 1, disableActions: false, joinedText: 'SŁOWNIK KOŃCOWY:' }, this.prepareDecode);
       }
     }, step * 100 + 1000 + 500 * Number(slowMode));
   };
 
   render() {
     const {
+      code,
+      decodedDict,
+      isDecoding,
+      decodedSentence,
       dictionary,
       disableActions,
       initialDictInput,
@@ -130,6 +188,7 @@ export default class LZW extends React.Component {
       initialError,
       joinedText,
       slowMode,
+      shouldDecode,
     } = this.state;
     return (
       <div className="wrapper">
@@ -147,6 +206,20 @@ export default class LZW extends React.Component {
             value={slowMode}
             onChange={this.handleChangeValue}
           />
+        </div>
+
+        <div className="form-check" style={{ marginBottom: 40 }}>
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={shouldDecode}
+            id="decodeCheck"
+            onChange={() => this.setState(prev => ({ shouldDecode: !prev.shouldDecode }))}
+            style={{ width: 20, height: 20, marginTop: 10 }}
+          />
+          <label className="form-check-label" style={{ marginLeft: 10 }} htmlFor="decodeCheck">
+            Dekoduj po zakończeniu
+          </label>
         </div>
 
         <div className="section">
@@ -172,7 +245,7 @@ export default class LZW extends React.Component {
             type="button"
             className="btn btn-danger clean"
             disabled={disableActions}
-            onClick={() => this.setState({ dictionary: [] })}>
+            onClick={() => this.setState(this.initialState)}>
             <i className="fa fa-trash fa-lg" aria-hidden="true" />
           </button>
         </div>
@@ -197,10 +270,12 @@ export default class LZW extends React.Component {
             type="button"
             className="btn btn-danger clean"
             disabled={disableActions}
-            onClick={() => this.setState({ initialText: '' })}>
+            onClick={() => this.setState(this.initialState)}>
             <i className="fa fa-trash fa-lg" aria-hidden="true" />
           </button>
         </div>
+
+        {!shouldDecode && <h2>{code.join(', ')}</h2>}
 
         <h3>{joinedText}</h3>
 
@@ -209,6 +284,23 @@ export default class LZW extends React.Component {
             <p className="word" key={idx}>{`${idx} = ${item}`}</p>
           ))}
         </div>
+
+        {shouldDecode && (
+          <>
+            <h2 style={{ marginTop: 30 }}>{code.join(', ')}</h2>
+
+            {isDecoding && (
+              <>
+                <h3 style={{ color: 'orange' }}>{decodedSentence}</h3>
+                <div className="dictionary">
+                  {decodedDict.map((item, idx) => (
+                    <p className="word" key={idx}>{`${idx} = ${item}`}</p>
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )}
       </div>
     );
   }
