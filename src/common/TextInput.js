@@ -39,7 +39,7 @@ const TextInput = ({
       onKeyPress={onKeyPress}
     />
 
-    {hasError ? <div className="invalid-feedback">Trzeba by coś tutaj wpisać...</div> : <br />}
+    {hasError ? <div className="invalid-feedback">Uzupełnij słownik początkowy...</div> : <br />}
   </div>
 );
 

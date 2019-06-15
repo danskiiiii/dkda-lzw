@@ -68,14 +68,16 @@ export default class LZW extends React.Component {
   handleStart = () => {
     const { initialText, dictionary } = this.state;
 
-    if (!initialText.length) {
+    const joinedText = initialText.split(' ').join('-');
+    const diff = joinedText.split('').filter(x => !dictionary.includes(x));
+
+    if (diff.length) {
       this.setState({ initialError: true });
+
       return;
     }
 
-    const joinedText = initialText.split(' ').join('-');
-
-    this.setState({ joinedText, disableActions: true, decodedDict: dictionary }, this.encodeLoop);
+    this.setState({ initialError: false, joinedText, disableActions: true, decodedDict: dictionary }, this.encodeLoop);
   };
 
   findNext = (joinedText, dictionary) => {
@@ -259,7 +261,7 @@ export default class LZW extends React.Component {
           <TextInput
             inputRef={input => (this.txtInput = input)}
             formClassname="initial-txt"
-            hasError={initialError ? initialText.length === 0 : false}
+            hasError={initialError}
             label="Tekst do zakodowania:"
             name="initialText"
             maxLength={100}
