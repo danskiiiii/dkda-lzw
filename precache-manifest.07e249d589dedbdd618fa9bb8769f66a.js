@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "1b9680b3fda00507f443fa5ea4b408ec",
+    "revision": "9cafc2d7116d9ddc6c1249a24f08ec0c",
     "url": "/dkda-lzw/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/dkda-lzw/static/css/2.e9f6a2f5.chunk.css"
   },
   {
-    "revision": "06dec89905113d551c3f",
+    "revision": "df089ca56684ca6fdd04",
     "url": "/dkda-lzw/static/css/main.d3aa3591.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/dkda-lzw/static/js/2.af07c014.chunk.js"
   },
   {
-    "revision": "06dec89905113d551c3f",
-    "url": "/dkda-lzw/static/js/main.43fa0677.chunk.js"
+    "revision": "df089ca56684ca6fdd04",
+    "url": "/dkda-lzw/static/js/main.cc1c4f1c.chunk.js"
   },
   {
     "revision": "cb10017b4bcfeb600ba6",
