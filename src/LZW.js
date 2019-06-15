@@ -148,13 +148,23 @@ export default class LZW extends React.Component {
 
     setTimeout(() => {
       this.setState(prevState => {
-        const codeElementTxt =
+        let codeElementTxt =
           prevState.joinedText.length > nextWord.length ? nextWord.slice(0, nextWord.length - 1) : nextWord;
-        const codeElement = prevState.dictionary.indexOf(codeElementTxt);
-
+        let codeElement = prevState.dictionary.indexOf(codeElementTxt);
+        let last = '';
+        let lastIndex = -1;
+        if (codeElement === -1) {
+          let i = 0;
+          while (codeElement === -1) {
+            i++;
+            codeElement = prevState.dictionary.indexOf(codeElementTxt.slice(0, codeElementTxt.length - i));
+          }
+          last = prevState.joinedText.slice(-1 * i);
+          lastIndex = prevState.dictionary.indexOf(last);
+        }
         return {
           joinedText: prevState.joinedText.substr(nextWord.length - 1, prevState.joinedText.length),
-          code: codeElement !== -1 ? [...prevState.code, codeElement] : prevState.code,
+          code: last.length ? [...prevState.code, codeElement, lastIndex] : [...prevState.code, codeElement],
           dictionary: !prevState.dictionary.some(w => w === nextWord)
             ? [...prevState.dictionary, nextWord]
             : prevState.dictionary,
